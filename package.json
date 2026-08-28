@@ -1,6 +1,6 @@
 {
   "name": "workflows",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "private": true,
   "description": "Shared, reusable GitHub Actions workflows for InfiniteToken repos",
   "repository": {
