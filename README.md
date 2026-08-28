@@ -22,7 +22,7 @@ Copy [`examples/npm-ci.yml`](examples/npm-ci.yml) into a consuming repo's `.gith
 
 `npm-publish.yml` needs `permissions: contents: read` / `id-token: write` granted explicitly on the calling job (see the example): a called workflow can never receive more permissions than its caller grants, and `id-token: write` (required for OIDC trusted publishing) is never on by default.
 
-Pin to an exact tag (`@v0.1.3`), not `@main`: a bad edit to a `@main`-referenced workflow breaks every consuming repo's CI simultaneously on their next run. This repo is still pre-1.0 (see Tagging scheme below), so don't pin to the `@v0` alias yet, even though it exists.
+Pin to `@v1` (the major-version alias, see Tagging scheme below), not `@main`: a bad edit to a `@main`-referenced workflow breaks every consuming repo's CI simultaneously on their next run.
 
 ## Tagging scheme
 

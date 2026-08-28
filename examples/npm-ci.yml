@@ -11,6 +11,6 @@ on:
 
 jobs:
   quality:
-    uses: infinitetoken/Workflows/.github/workflows/npm-ci.yml@v0.1.3
+    uses: infinitetoken/Workflows/.github/workflows/npm-ci.yml@v1
     # with:
     #   script: ci   # only if this repo's script isn't named "verify" (the current default)
