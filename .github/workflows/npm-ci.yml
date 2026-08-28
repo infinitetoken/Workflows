@@ -32,4 +32,11 @@ jobs:
 
       - run: npm ci
 
+      - name: tsconfig drift check
+        continue-on-error: true
+        run: |
+          curl -s https://raw.githubusercontent.com/infinitetoken/Workflows/main/scripts/check-tsconfig-drift.cjs -o ./.check-tsconfig-drift.cjs
+          node ./.check-tsconfig-drift.cjs
+          rm -f ./.check-tsconfig-drift.cjs
+
       - run: npm run ${{ inputs.script }}

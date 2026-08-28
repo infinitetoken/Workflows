@@ -9,12 +9,19 @@
   },
   "license": "MIT",
   "author": "Jay Deaton",
+  "type": "commonjs",
   "scripts": {
-    "lint": "actionlint .github/workflows/*.yml examples/*.yml && shellcheck scripts/*.sh",
-    "preversion": "npm run lint",
+    "fix": "eslint . --fix",
+    "lint": "eslint . && actionlint .github/workflows/*.yml examples/*.yml && shellcheck scripts/*.sh",
     "release": "git push --follow-tags && bash scripts/move-major-tag.sh",
     "release:major": "npm version major && npm run release",
     "release:minor": "npm version minor && npm run release",
-    "release:patch": "npm version patch && npm run release"
+    "release:patch": "npm version patch && npm run release",
+    "preversion": "npm run lint"
+  },
+  "prettier": "@infinitetoken/eslint-config/prettier",
+  "devDependencies": {
+    "@infinitetoken/eslint-config": "^0.1.4",
+    "eslint": "^9.39.4"
   }
 }
