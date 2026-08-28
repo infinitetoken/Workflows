@@ -1,3 +1,6 @@
+# Exported/reusable — consuming repos call this via
+# uses: infinitetoken/Workflows/.github/workflows/npm-ci.yml@v1
+# See examples/npm-ci.yml for a copy-pasteable caller.
 name: npm-ci
 
 on:

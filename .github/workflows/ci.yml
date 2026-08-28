@@ -1,3 +1,6 @@
+# This repo's own housekeeping CI (lints npm-ci.yml/npm-publish.yml below). Not exported,
+# not something a consuming repo should reference. The reusable workflows other repos
+# actually call are npm-ci.yml and npm-publish.yml, per the table in README.md.
 name: CI
 
 on:

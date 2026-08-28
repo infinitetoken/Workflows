@@ -1,3 +1,6 @@
+# Exported/reusable — consuming repos call this via
+# uses: infinitetoken/Workflows/.github/workflows/npm-publish.yml@v1
+# See examples/npm-publish.yml for a copy-pasteable caller.
 name: npm-publish
 
 on:
