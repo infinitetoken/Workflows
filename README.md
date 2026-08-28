@@ -40,7 +40,16 @@ jobs:
       id-token: write
 ```
 
-Pin to a tag (`@v1`), not `@main` — a bad edit to a `@main`-referenced workflow breaks every consuming repo's CI simultaneously on their next run. Bump the tag deliberately (`npm run release:patch` etc.) and update consuming repos on your own schedule.
+Pin to `@v1` (a major-version alias tag), not `@main` — a bad edit to a `@main`-referenced workflow breaks every consuming repo's CI simultaneously on their next run.
+
+## Tagging scheme
+
+Every release creates two tags:
+
+- An exact, immutable tag (`v1.2.3`) — the real release, never moves.
+- A major-version alias (`v1`) — force-repointed at the exact tag on every release via `scripts/move-major-tag.sh`, which `npm run release` calls automatically after pushing.
+
+This means consuming repos that pin `@v1` pick up every future patch/minor release automatically — matching semver's actual contract (patch = non-breaking, minor = additive) and the same convention `actions/checkout@v4` etc. use. `preversion` (`npm ci && npm run verify`) is what makes that safe to do automatically: nothing gets tagged, let alone force-pushed as the new `v1`, without passing first. A breaking change goes out as `release:major` (`npm version major`), which creates `v2.0.0` and moves a *new* `v2` alias — `v1` stays frozen at its last release, so existing consumers are unaffected until they deliberately bump their `uses:` line to `@v2`.
 
 ## Adding a new stack
 
