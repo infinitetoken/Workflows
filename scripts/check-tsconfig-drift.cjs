@@ -49,6 +49,7 @@ const redundant = Object.keys(ownOptions).filter(function (key) {
 })
 
 if (redundant.length > 0) {
+  // eslint-disable-next-line no-console
   console.log('::warning::tsconfig.json redundantly re-declares option(s) already set identically by "' + extendsValue + '": ' + redundant.join(', ') + '. Consider removing them.')
 }
 process.exit(0)
