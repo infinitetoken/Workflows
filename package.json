@@ -10,6 +10,8 @@
   "license": "MIT",
   "author": "Jay Deaton",
   "scripts": {
+    "lint": "actionlint .github/workflows/*.yml && shellcheck scripts/*.sh",
+    "preversion": "npm run lint",
     "release": "git push --follow-tags && bash scripts/move-major-tag.sh",
     "release:major": "npm version major && npm run release",
     "release:minor": "npm version minor && npm run release",

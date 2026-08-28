@@ -49,7 +49,15 @@ Every release creates two tags:
 - An exact, immutable tag (`v1.2.3`) — the real release, never moves.
 - A major-version alias (`v1`) — force-repointed at the exact tag on every release via `scripts/move-major-tag.sh`, which `npm run release` calls automatically after pushing.
 
-This means consuming repos that pin `@v1` pick up every future patch/minor release automatically — matching semver's actual contract (patch = non-breaking, minor = additive) and the same convention `actions/checkout@v4` etc. use. `preversion` (`npm ci && npm run verify`) is what makes that safe to do automatically: nothing gets tagged, let alone force-pushed as the new `v1`, without passing first. A breaking change goes out as `release:major` (`npm version major`), which creates `v2.0.0` and moves a *new* `v2` alias — `v1` stays frozen at its last release, so existing consumers are unaffected until they deliberately bump their `uses:` line to `@v2`.
+This means consuming repos that pin `@v1` pick up every future patch/minor release automatically — matching semver's actual contract (patch = non-breaking, minor = additive) and the same convention `actions/checkout@v4` etc. use. `preversion` (`npm run lint`) is what makes that safe to do automatically: nothing gets tagged, let alone force-pushed as the new `v1`, without `actionlint` and `shellcheck` passing first. A breaking change goes out as `release:major` (`npm version major`), which creates `v2.0.0` and moves a *new* `v2` alias — `v1` stays frozen at its last release, so existing consumers are unaffected until they deliberately bump their `uses:` line to `@v2`.
+
+## Prerequisites
+
+Cutting a release runs `preversion` locally (`actionlint` + `shellcheck`) before anything is tagged or pushed — install both first:
+
+```bash
+brew install actionlint   # pulls in shellcheck as a dependency
+```
 
 ## Adding a new stack
 
