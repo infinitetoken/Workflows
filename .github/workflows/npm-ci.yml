@@ -7,6 +7,10 @@ on:
         description: Node.js version to use
         type: string
         default: '22'
+      script:
+        description: npm script to run after install
+        type: string
+        default: 'verify'
 
 jobs:
   ci:
@@ -21,4 +25,4 @@ jobs:
 
       - run: npm ci
 
-      - run: npm run ci
+      - run: npm run ${{ inputs.script }}

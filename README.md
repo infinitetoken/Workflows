@@ -25,6 +25,13 @@ jobs:
     uses: infinitetoken/Workflows/.github/workflows/npm-ci.yml@v1
 ```
 
+Defaults to running `npm run verify` — the current standard script name. Repos still on the older `ci` name need to override it explicitly until renamed:
+
+```yaml
+    with:
+      script: ci
+```
+
 And `.github/workflows/publish.yml`:
 
 ```yaml
