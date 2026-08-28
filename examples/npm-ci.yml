@@ -1,0 +1,16 @@
+# Copy into a consuming repo as .github/workflows/ci.yml.
+# Update the @vX.Y.Z tag to the latest release: https://github.com/infinitetoken/Workflows/tags
+name: CI
+run-name: CI - ${{ github.event.pull_request.title || github.event.head_commit.message }}
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  quality:
+    uses: infinitetoken/Workflows/.github/workflows/npm-ci.yml@v0.1.3
+    # with:
+    #   script: ci   # only if this repo's script isn't named "verify" (the current default)
