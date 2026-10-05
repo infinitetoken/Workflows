@@ -1,0 +1,26 @@
+# For Node server apps that build a Docker image and deploy it to AWS Elastic
+# Beanstalk (ECR push -> EB application version -> update environment -> wait
+# for green health). Not for repos with no AWS deploy step.
+#
+# Copy into a consuming repo as .github/workflows/deploy-aws.yml.
+# Update the @vX.Y.Z tag to the latest release: https://github.com/infinitetoken/Workflows/tags
+name: Deploy to AWS
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    uses: infinitetoken/Workflows/.github/workflows/eb-docker-deploy.yml@v1
+    with:
+      app-name: my-app
+      # eb-environment: my-app-prod        # only if it doesn't match "<app-name>-prod"
+      # s3-bucket: lumber-app              # only if not using the EB-managed bucket
+      # s3-key-prefix: eb-deployments      # only if not using "<app-name>" as the key prefix
+      # include-platform-dir: false        # only if this repo has no .platform directory
+      # pre-deploy-command: db:migrate     # only if this repo runs migrations before deploy
+    secrets:
+      aws-role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+      # database-url: ${{ secrets.DATABASE_URL }}  # only if pre-deploy-command needs it

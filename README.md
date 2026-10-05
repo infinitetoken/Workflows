@@ -8,10 +8,11 @@ Shared, reusable GitHub Actions workflows for InfiniteToken repos. One canonical
 | --- | --- |
 | `npm-ci.yml` | Install (`npm ci`) + run a package's own `npm run ci` script (lint/test/typecheck/build, as defined per-repo) |
 | `npm-publish.yml` | Install + `npm publish` via OIDC trusted publishing (no token required) |
+| `eb-docker-deploy.yml` | Build a Docker image, push to ECR, and deploy it to AWS Elastic Beanstalk (create/update environment, wait for green health) |
 
 ## Usage
 
-Copy [`examples/npm-ci.yml`](examples/npm-ci.yml) into a consuming repo's `.github/workflows/ci.yml`, and [`examples/npm-publish.yml`](examples/npm-publish.yml) into `.github/workflows/publish.yml`. These files are the source of truth for what a caller should look like. Update the `@vX.Y.Z` tag in each to the latest release ([tags](https://github.com/infinitetoken/Workflows/tags)), rather than copying from whatever some other consuming repo happens to have. Example files are named by toolchain (`npm-ci.yml`, later `pip-ci.yml`, `swift-ci.yml`, ...), matching the reusable workflow each one calls, not by what kind of repo consumes them, since the caller shape doesn't actually vary by repo type, only by which files a given repo needs (e.g. server apps and Expo apps only need the `-ci` example, not `-publish`).
+Copy [`examples/npm-ci.yml`](examples/npm-ci.yml) into a consuming repo's `.github/workflows/ci.yml`, [`examples/npm-publish.yml`](examples/npm-publish.yml) into `.github/workflows/publish.yml`, and [`examples/eb-docker-deploy.yml`](examples/eb-docker-deploy.yml) into `.github/workflows/deploy-aws.yml`. These files are the source of truth for what a caller should look like. Update the `@vX.Y.Z` tag in each to the latest release ([tags](https://github.com/infinitetoken/Workflows/tags)), rather than copying from whatever some other consuming repo happens to have. Example files are named by toolchain (`npm-ci.yml`, later `pip-ci.yml`, `swift-ci.yml`, ...), matching the reusable workflow each one calls, not by what kind of repo consumes them, since the caller shape doesn't actually vary by repo type, only by which files a given repo needs (e.g. server apps and Expo apps only need the `-ci` example, not `-publish`).
 
 `npm-ci.yml` defaults to running `npm run verify` (the current standard script name). Repos still on the older `ci` name need to override it explicitly until renamed:
 
@@ -21,6 +22,8 @@ Copy [`examples/npm-ci.yml`](examples/npm-ci.yml) into a consuming repo's `.gith
 ```
 
 `npm-publish.yml` needs `permissions: contents: read` / `id-token: write` granted explicitly on the calling job (see the example): a called workflow can never receive more permissions than its caller grants, and `id-token: write` (required for OIDC trusted publishing) is never on by default.
+
+`eb-docker-deploy.yml` only requires `app-name` and the `aws-role-to-assume` secret; everything else defaults to the common case (EB environment `<app-name>-prod`, the EB-managed S3 bucket, an `.platform` dir included in the bundle). Override `s3-bucket`/`s3-key-prefix` for a repo that deploys through a shared bucket instead of the EB-managed one, `include-platform-dir: false` for a repo with no `.platform` directory, and `pre-deploy-command` (plus the `database-url` secret) for a repo that runs migrations before deploying — see the example for all of them commented out. Its own build/test gate calls `npm-ci.yml` internally (via a local `uses: ./...` reference, so it always resolves to the exact commit this workflow itself is running at) rather than duplicating the install-and-verify steps, since a repo's separate `ci.yml` run can't gate a same-push `deploy-aws.yml` run — they're independent workflow files triggered by the same event, not steps in a chain.
 
 Pin to `@v1` (the major-version alias, see Tagging scheme below), not `@main`: a bad edit to a `@main`-referenced workflow breaks every consuming repo's CI simultaneously on their next run.
 
