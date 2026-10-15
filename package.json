@@ -21,7 +21,7 @@
   },
   "prettier": "@infinitetoken/eslint-config/prettier",
   "devDependencies": {
-    "@infinitetoken/eslint-config": "^0.1.4",
+    "@infinitetoken/eslint-config": "^0.2.0",
     "eslint": "^9.39.4"
   }
 }

@@ -14,3 +14,4 @@ jobs:
     uses: infinitetoken/Workflows/.github/workflows/npm-ci.yml@v1
     # with:
     #   script: ci   # only if this repo's script isn't named "verify" (the current default)
+    #   timeout-minutes: 30   # only if a normal run of this repo needs longer than the 20-minute default
