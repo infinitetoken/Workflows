@@ -52,7 +52,9 @@ on:
 
 jobs:
   build-test:
-    uses: ./.github/workflows/npm-ci.yml
+    # By its full path, not ./.github/workflows/npm-ci.yml: called from another repo, GitHub looks a relative path up at
+    # the v1 tag object rather than a commit and reports "workflow was not found" before any job starts
+    uses: infinitetoken/Workflows/.github/workflows/npm-ci.yml@v1
     with:
       node-version: ${{ inputs.node-version }}
       script: ${{ inputs.verify-script }}

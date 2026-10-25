@@ -17,6 +17,11 @@ on:
 jobs:
   deploy:
     uses: infinitetoken/Workflows/.github/workflows/eb-docker-deploy.yml@v1
+    # Required: the deploy signs in to AWS through OIDC (id-token: write), and a called workflow only gets the
+    # permissions its caller grants
+    permissions:
+      contents: read
+      id-token: write
     with:
       app-name: my-app
       # eb-environment: my-app-prod        # only if it doesn't match "<app-name>-prod"
