@@ -4,12 +4,15 @@
 #
 # Copy into a consuming repo as .github/workflows/deploy-aws.yml.
 # Update the @vX.Y.Z tag to the latest release: https://github.com/infinitetoken/Workflows/tags
-name: Deploy to AWS
+name: Deploy
+run-name: Deploy ${{ github.ref_name }}
 
+# On a release tag (npm run release:patch), like every other app's deploy, so a docs commit on main doesn't rebuild
+# and restart the environment.
 on:
   push:
-    branches:
-      - main
+    tags:
+      - 'v*'
 
 jobs:
   deploy:
