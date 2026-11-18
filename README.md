@@ -8,7 +8,7 @@ Shared, reusable GitHub Actions workflows for InfiniteToken repos. One canonical
 | --- | --- |
 | `npm-ci.yml` | Install (`npm ci`) + run a package's own `npm run ci` script (lint/test/typecheck/build, as defined per-repo) |
 | `npm-publish.yml` | Install + `npm publish` via OIDC trusted publishing (no token required) |
-| `eb-docker-deploy.yml` | Build a Docker image, push to ECR, and deploy it to AWS Elastic Beanstalk (create/update environment, wait for green health) |
+| `eb-docker-deploy.yml` | Build a Docker image, push to ECR, and deploy it to AWS Elastic Beanstalk (create/update environment, wait until it runs the new version with green health, failing if Elastic Beanstalk refused it) |
 
 ## Usage
 

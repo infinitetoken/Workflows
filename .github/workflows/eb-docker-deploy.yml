@@ -72,6 +72,9 @@ jobs:
       ECR_REPOSITORY: ${{ inputs.app-name }}
       EB_APPLICATION: ${{ inputs.app-name }}
       EB_ENVIRONMENT: ${{ inputs.eb-environment != '' && inputs.eb-environment || format('{0}-prod', inputs.app-name) }}
+      # The application version this run creates. On the job, not the deploy step, since the wait step checks that the
+      # environment ends up running it
+      VERSION_LABEL: ${{ inputs.app-name }}-${{ github.sha }}-${{ github.run_number }}
 
     steps:
       - name: Checkout code
@@ -133,7 +136,6 @@ jobs:
 
       - name: Deploy to Elastic Beanstalk
         env:
-          VERSION_LABEL: ${{ inputs.app-name }}-${{ github.sha }}-${{ github.run_number }}
           S3_BUCKET_OVERRIDE: ${{ inputs.s3-bucket }}
           S3_KEY_PREFIX: ${{ inputs.s3-key-prefix != '' && inputs.s3-key-prefix || inputs.app-name }}
         run: |
@@ -183,38 +185,50 @@ jobs:
 
           echo "Deployment triggered"
 
-      - name: Wait for Green Health
+      # Ready and Green alone isn't success: when Elastic Beanstalk refuses a deploy ("Failed to deploy application"),
+      # the environment goes back to Ready and Green on the version it was running before. So once it's Ready, it has to
+      # be running the version this run created, or the deploy failed (the events step below shows why).
+      - name: Wait for the new version and Green health
         run: |
-          MAX_RETRIES=8
-          RETRY_INTERVAL=300
-          for i in $(seq 1 $MAX_RETRIES); do
-            echo "Health check attempt $i/$MAX_RETRIES..."
-            HEALTH=$(aws elasticbeanstalk describe-environments \
+          set -uo pipefail
+          TIMEOUT_SECONDS=2400
+          INTERVAL_SECONDS=20
+          LAST_STATE=""
+          START=$SECONDS
+          while true; do
+            # Waits before the first look too, so the update started in the step before has taken hold
+            sleep "$INTERVAL_SECONDS"
+            ELAPSED=$((SECONDS - START))
+            if STATE="$(aws elasticbeanstalk describe-environments \
               --application-name "${EB_APPLICATION}" \
               --environment-names "${EB_ENVIRONMENT}" \
               --region "${AWS_REGION}" \
-              --query "Environments[0].Health" \
-              --output text)
-            STATUS=$(aws elasticbeanstalk describe-environments \
-              --application-name "${EB_APPLICATION}" \
-              --environment-names "${EB_ENVIRONMENT}" \
-              --region "${AWS_REGION}" \
-              --query "Environments[0].Status" \
-              --output text)
-            echo "  Status=$STATUS  Health=$HEALTH"
-            if [ "$HEALTH" = "Green" ] && [ "$STATUS" = "Ready" ]; then
-              echo "Deployment succeeded."
-              break
+              --query "Environments[0].[Status,Health,VersionLabel]" \
+              --output text)"; then
+              read -r STATUS HEALTH LABEL <<< "$STATE"
+              if [ "$STATE" != "$LAST_STATE" ]; then
+                echo "${ELAPSED}s  Status=$STATUS  Health=$HEALTH  Version=$LABEL"
+                LAST_STATE="$STATE"
+              fi
+              if [ "$STATUS" = "Terminated" ] || [ "$STATUS" = "Terminating" ]; then
+                echo "Environment terminated unexpectedly. Aborting."
+                exit 1
+              fi
+              if [ "$STATUS" = "Ready" ] && [ "$LABEL" != "$VERSION_LABEL" ]; then
+                echo "Environment is Ready on version $LABEL, not $VERSION_LABEL: Elastic Beanstalk didn't deploy it."
+                exit 1
+              fi
+              if [ "$STATUS" = "Ready" ] && [ "$HEALTH" = "Green" ]; then
+                echo "Deployment succeeded: $VERSION_LABEL is live and Green."
+                break
+              fi
+            else
+              echo "${ELAPSED}s  Couldn't read the environment, trying again."
             fi
-            if [ "$STATUS" = "Terminated" ] || [ "$STATUS" = "Terminating" ]; then
-              echo "Environment terminated unexpectedly. Aborting."
+            if [ "$ELAPSED" -ge "$TIMEOUT_SECONDS" ]; then
+              echo "Timed out after ${ELAPSED}s waiting for $VERSION_LABEL to be Ready and Green."
               exit 1
             fi
-            if [ "$i" -eq "$MAX_RETRIES" ]; then
-              echo "Timed out waiting for Green health."
-              exit 1
-            fi
-            sleep $RETRY_INTERVAL
           done
 
       - name: Print Recent EB Events
